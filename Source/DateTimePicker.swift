@@ -24,8 +24,16 @@ import UIKit
         didSet {
             todayButton.setTitleColor(highlightColor, for: .normal)
             colonLabel.textColor = highlightColor
+            undoButton.setTitleColor(highlightColor, for: .normal)
+            doneButton.backgroundColor = highlightColor
         }
     }
+    
+    /*public var buttonBackgroundColor: UIColor = .clear {
+     didSet {
+     backgroundColor = buttonBackgroundColor
+     }
+     }*/
     
     public var darkColor = UIColor(red: 0, green: 22.0/255.0, blue: 39.0/255.0, alpha: 1)
     
@@ -62,6 +70,15 @@ import UIKit
             todayButton.frame = CGRect(x: contentView.frame.width - size, y: 0, width: size, height: 44)
         }
     }
+    
+    public var undoButtonTitle = "Cancel" {
+        didSet {
+            undoButton.setTitle(undoButtonTitle, for: .normal)
+            let size = undoButton.sizeThatFits(CGSize(width: 0, height: 44.0)).width + 10.0
+            undoButton.frame = CGRect(x: 0, y: 0, width: size, height: 44)
+        }
+    }
+    
     public var doneButtonTitle = "DONE" {
         didSet {
             doneButton.setTitle(doneButtonTitle, for: .normal)
@@ -77,6 +94,7 @@ import UIKit
     private var contentView: UIView!
     private var dateTitleLabel: UILabel!
     private var todayButton: UIButton!
+    private var undoButton: UIButton!
     private var doneButton: UIButton!
     private var colonLabel: UILabel!
     
@@ -123,6 +141,7 @@ import UIKit
         contentView.layer.shadowRadius = 1.5
         contentView.layer.shadowOpacity = 0.5
         contentView.backgroundColor = .white
+        //contentView.backgroundColor = UIColor(red: 44.0/255.0, green: 79.0/255.0, blue: 128.0/255.0, alpha: 1)//test
         contentView.isHidden = true
         addSubview(contentView)
         
@@ -130,14 +149,27 @@ import UIKit
         let titleView = UIView(frame: CGRect(origin: CGPoint.zero,
                                              size: CGSize(width: contentView.frame.width, height: 44)))
         titleView.backgroundColor = .white
+        //titleView.backgroundColor = UIColor(red: 44.0/255.0, green: 79.0/255.0, blue: 128.0/255.0, alpha: 1)//test
         contentView.addSubview(titleView)
         
         dateTitleLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 44))
         dateTitleLabel.font = UIFont.systemFont(ofSize: 15)
-        dateTitleLabel.textColor = darkColor
+        dateTitleLabel.textColor = darkColor//UIColor.white//darkColor
         dateTitleLabel.textAlignment = .center
         resetDateTitle()
         titleView.addSubview(dateTitleLabel)
+        
+        //undo button
+        undoButton = UIButton(type: .custom)
+        undoButton.setTitle(todayButtonTitle, for: .normal)
+        undoButton.setTitleColor(highlightColor, for: .normal)
+        undoButton.addTarget(self, action: #selector(DateTimePicker.dismissCalendar), for: .touchUpInside)
+        undoButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+        undoButton.isHidden = false
+        let size0 = undoButton.sizeThatFits(CGSize(width: 0, height: 44.0)).width + 10.0
+        undoButton.frame = CGRect(x: 0, y: 0, width: size0, height: 44)
+        titleView.addSubview(undoButton)
+        //-end
         
         todayButton = UIButton(type: .system)
         todayButton.setTitle(todayButtonTitle, for: .normal)
@@ -157,7 +189,8 @@ import UIKit
         layout.itemSize = CGSize(width: 75, height: 80)
         
         dayCollectionView = UICollectionView(frame: CGRect(x: 0, y: 44, width: contentView.frame.width, height: 100), collectionViewLayout: layout)
-        dayCollectionView.backgroundColor = daysBackgroundColor
+        dayCollectionView.backgroundColor = .white//daysBackgroundColor
+        //dayCollectionView.backgroundColor = UIColor(red: 44.0/255.0, green: 79.0/255.0, blue: 128.0/255.0, alpha: 1)//test
         dayCollectionView.showsHorizontalScrollIndicator = false
         dayCollectionView.register(DateCollectionViewCell.self, forCellWithReuseIdentifier: "dateCell")
         dayCollectionView.dataSource = self
@@ -169,19 +202,21 @@ import UIKit
         
         // top & bottom borders on day collection view
         let borderTopView = UIView(frame: CGRect(x: 0, y: titleView.frame.height, width: titleView.frame.width, height: 1))
-        borderTopView.backgroundColor = darkColor.withAlphaComponent(0.2)
+        borderTopView.backgroundColor = .white//darkColor.withAlphaComponent(0.2)
         contentView.addSubview(borderTopView)
         
         let borderBottomView = UIView(frame: CGRect(x: 0, y: dayCollectionView.frame.origin.y + dayCollectionView.frame.height, width: titleView.frame.width, height: 1))
-        borderBottomView.backgroundColor = darkColor.withAlphaComponent(0.2)
+        borderBottomView.backgroundColor = .white//darkColor.withAlphaComponent(0.2)
         contentView.addSubview(borderBottomView)
         
         // done button
-        doneButton = UIButton(type: .system)
+        doneButton = UIButton(type: .custom)
         doneButton.frame = CGRect(x: 10, y: contentView.frame.height - 10 - 44, width: contentView.frame.width - 20, height: 44)
         doneButton.setTitle(doneButtonTitle, for: .normal)
         doneButton.setTitleColor(.white, for: .normal)
-        doneButton.backgroundColor = darkColor.withAlphaComponent(0.5)
+        //doneButton.backgroundColor = darkColor.withAlphaComponent(0.5)
+        //doneButton.backgroundColor = UIColor(red: 97.0/255.0, green: 191.0/255.0, blue: 173.0/255.0, alpha: 1)//test
+        doneButton.backgroundColor = highlightColor//test
         doneButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 13)
         doneButton.layer.cornerRadius = 3
         doneButton.layer.masksToBounds = true
@@ -227,11 +262,13 @@ import UIKit
         // time separators
         let separatorTopView = UIView(frame: CGRect(x: 0, y: 0, width: 90, height: 1))
         separatorTopView.backgroundColor = darkColor.withAlphaComponent(0.2)
+        //separatorTopView.backgroundColor = .white//test
         separatorTopView.center = CGPoint(x: contentView.frame.width / 2, y: borderBottomView.frame.origin.y + 36)
         contentView.addSubview(separatorTopView)
         
         let separatorBottomView = UIView(frame: CGRect(x: 0, y: 0, width: 90, height: 1))
         separatorBottomView.backgroundColor = darkColor.withAlphaComponent(0.2)
+        //separatorBottomView.backgroundColor = .white//test
         separatorBottomView.center = CGPoint(x: contentView.frame.width / 2, y: separatorTopView.frame.origin.y + 36)
         contentView.addSubview(separatorBottomView)
         
@@ -265,6 +302,18 @@ import UIKit
     func setToday() {
         selectedDate = Date()
         resetTime()
+    }
+    
+    func dismissCalendar() {
+        UIView.animate(withDuration: 0.3, animations: {
+            // animate to show contentView
+            self.contentView.frame = CGRect(x: 0,
+                                            y: self.frame.height,
+                                            width: self.frame.width,
+                                            height: self.contentHeight)
+        }) { (completed) in
+            self.removeFromSuperview()
+        }
     }
     
     func resetTime() {
@@ -325,7 +374,7 @@ import UIKit
             if formatter.string(from: date) == formatter.string(from: currentDate) {
                 let indexPath = IndexPath(row: i, section: 0)
                 dayCollectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: { 
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
                     self.dayCollectionView.selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
                 })
                 
@@ -369,7 +418,10 @@ extension DateTimePicker: UITableViewDataSource, UITableViewDelegate {
         cell.textLabel?.textAlignment = tableView == hourTableView ? .right : .left
         cell.textLabel?.font = UIFont.boldSystemFont(ofSize: 18)
         cell.textLabel?.textColor = darkColor.withAlphaComponent(0.4)
+        //cell.textLabel?.textColor = .white//test
         cell.textLabel?.highlightedTextColor = highlightColor
+        //cell.contentView.backgroundColor = UIColor(red: 44.0/255.0, green: 79.0/255.0, blue: 128.0/255.0, alpha: 1)//test
+        //cell.backgroundColor = UIColor(red: 44.0/255.0, green: 79.0/255.0, blue: 128.0/255.0, alpha: 1)//test
         // add module operation to set value same
         cell.textLabel?.text = String(format: "%02i", indexPath.row % (tableView == hourTableView ? 24 : 60))
         
