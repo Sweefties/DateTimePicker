@@ -11,102 +11,340 @@ import UIKit
 
 @objc public class DateTimePicker: UIView {
     
+    // ********************************
+    //
+    // MARK: - Constants
+    //
+    // ********************************
+    
+    /**
+     content height as `CGFloat`
+     height of content view
+     */
     let contentHeight: CGFloat = 310
     
-    // public vars
-    public var backgroundViewColor: UIColor = .clear {
+    // ********************************
+    //
+    // MARK: - Public Properties
+    //
+    // ********************************
+    
+    /**
+     dark color as `UIColor`
+     */
+    public var darkColor = UIColor(red: 0.0, green: 22.0/255.0, blue: 39.0/255.0, alpha: 1.0)
+    
+    /**
+     days background color as `UIColor`
+     */
+    public var daysBackgroundColor = UIColor(red: 239.0/255.0, green: 243.0/255.0, blue: 244.0/255.0, alpha: 1.0)
+    
+    /**
+     did layout at once as `Bool`
+     */
+    var didLayoutAtOnce : Bool = false
+    
+    /**
+     corner radius for content view as `CGFloat`
+     */
+    public var cornerRadius: CGFloat = 0.0 {
         didSet {
-            backgroundColor = backgroundViewColor
+            contentView.layer.cornerRadius = cornerRadius
+            contentView.layer.masksToBounds = true
         }
     }
     
-    public var highlightColor = UIColor(red: 0/255.0, green: 199.0/255.0, blue: 194.0/255.0, alpha: 1) {
+    /**
+     completion handler as `Date` optional
+     */
+    public var completionHandler: ((Date)->Void)?
+    
+    /**
+     background view color as `UIColor` optional
+     */
+    public var backgroundViewColor: UIColor? = .clear {
+        didSet {
+            shadowView.backgroundColor = backgroundViewColor
+        }
+    }
+    
+    /**
+     highlight color as `UIColor`
+     */
+    public var highlightColor = UIColor(red: 0.0/255.0, green: 199.0/255.0, blue: 194.0/255.0, alpha: 1.0) {
         didSet {
             todayButton.setTitleColor(highlightColor, for: .normal)
             colonLabel.textColor = highlightColor
-            undoButton.setTitleColor(highlightColor, for: .normal)
+            cancelButton.setTitleColor(highlightColor, for: .normal)
             doneButton.backgroundColor = highlightColor
         }
     }
     
-    /*public var buttonBackgroundColor: UIColor = .clear {
-     didSet {
-     backgroundColor = buttonBackgroundColor
-     }
-     }*/
-    
-    public var darkColor = UIColor(red: 0, green: 22.0/255.0, blue: 39.0/255.0, alpha: 1)
-    
-    public var daysBackgroundColor = UIColor(red: 239.0/255.0, green: 243.0/255.0, blue: 244.0/255.0, alpha: 1)
-    
-    var didLayoutAtOnce = false
-    public override func layoutSubviews() {
-        super.layoutSubviews()
-        // For the first time view will be layouted manually before show
-        // For next times we need relayout it because of screen rotation etc.
-        if !didLayoutAtOnce {
-            didLayoutAtOnce = true
-        } else {
-            self.configureView()
+    /**
+     done button background color as `UIColor`
+     */
+    public var buttonBackgroundColor: UIColor = .clear {
+        didSet {
+            doneButton.backgroundColor = buttonBackgroundColor
         }
     }
     
+    /**
+     content view background color as `UIColor`
+     */
+    public var contentViewBackgroundColor: UIColor = .white {
+        didSet {
+            contentView.backgroundColor = contentViewBackgroundColor
+        }
+    }
+    
+    /**
+     title view background color as `UIColor`
+     */
+    public var titleViewBackgroundColor: UIColor = .white
+    
+    /**
+     days collection view background color as `UIColor`
+     */
+    public var daysCollectionViewBackgroundColor: UIColor = .white {
+        didSet {
+            dayCollectionView.backgroundColor = daysCollectionViewBackgroundColor
+        }
+    }
+    
+    /**
+     border top view background color as `UIColor`
+     */
+    public var borderTopViewBackgroundColor: UIColor = .white
+    
+    /**
+     border bottom view background color as `UIColor`
+     */
+    public var borderBottomViewBackgroundColor: UIColor = .white
+    
+    /**
+     done button title color as `UIColor`
+     */
+    public var doneButtonTitleColor: UIColor = .white {
+        didSet {
+            doneButton.setTitleColor(doneButtonTitleColor, for: .normal)
+        }
+    }
+    
+    /**
+     cell day title color as `UIColor`
+     */
+    public var cellDayTitleColor: UIColor = .white
+    
+    /**
+     cell month title color as `UIColor`
+     */
+    public var cellMonthTitleColor: UIColor = .white
+    
+    /**
+     cell number day title color as `UIColor`
+     */
+    public var cellNumberTitleColor: UIColor = .white
+    
+    /**
+     cell border color as `UIColor`
+     */
+    public var cellBorderColor: UIColor = UIColor(red: 199.0/255.0,
+                                                  green: 198.0/255.0,
+                                                  blue: 200.0/255.0,
+                                                  alpha: 1.0)
+    
+    /**
+     cell background color as `UIColor`
+     */
+    public var cellBackgroundColor: UIColor = UIColor(red: 199.0/255.0,
+                                                      green: 198.0/255.0,
+                                                      blue: 200.0/255.0,
+                                                      alpha: 1.0)
+    
+    
+    /**
+     selected date as `Date`
+     */
     public var selectedDate = Date() {
         didSet {
             resetDateTitle()
         }
     }
     
+    /**
+     date format as `String`
+     */
     public var dateFormat = "HH:mm dd/MM/YYYY" {
         didSet {
             resetDateTitle()
         }
     }
     
+    /**
+     today button title as `String`
+     */
     public var todayButtonTitle = "Today" {
         didSet {
             todayButton.setTitle(todayButtonTitle, for: .normal)
-            let size = todayButton.sizeThatFits(CGSize(width: 0, height: 44.0)).width + 10.0
+            let size = todayButton.sizeThatFits(CGSize(width: 0, height: 44.0)).width + 20.0
             todayButton.frame = CGRect(x: contentView.frame.width - size, y: 0, width: size, height: 44)
         }
     }
     
-    public var undoButtonTitle = "Cancel" {
+    /**
+     cancel button title as `String`
+     */
+    public var cancelButtonTitle = "Cancel" {
         didSet {
-            undoButton.setTitle(undoButtonTitle, for: .normal)
-            let size = undoButton.sizeThatFits(CGSize(width: 0, height: 44.0)).width + 10.0
-            undoButton.frame = CGRect(x: 0, y: 0, width: size, height: 44)
+            cancelButton.setTitle(cancelButtonTitle, for: .normal)
+            let size = cancelButton.sizeThatFits(CGSize(width: 0, height: 44.0)).width + 20.0
+            cancelButton.frame = CGRect(x: 0, y: 0, width: size, height: 44)
         }
     }
     
+    /**
+     done button title as `String`
+     */
     public var doneButtonTitle = "DONE" {
         didSet {
             doneButton.setTitle(doneButtonTitle, for: .normal)
         }
     }
-    public var completionHandler: ((Date)->Void)?
     
-    // private vars
+    // ********************************
+    //
+    // MARK: - Private Properties
+    //
+    // ********************************
+    
+    /**
+     hour table view as `UITableView`
+     */
     internal var hourTableView: UITableView!
+    
+    /**
+     minute table view as `UITableView`
+     */
     internal var minuteTableView: UITableView!
+    
+    /**
+     day collection view as `UICollectionView`
+     */
     internal var dayCollectionView: UICollectionView!
     
-    private var contentView: UIView!
+    /**
+     shadow view as `UIView`
+     */
+    private var shadowView: UIView!
+    
+    /**
+     content view as `UIView`
+     */
+    private var contentView: UIView! {
+        didSet {
+            guard self.cornerRadius > 0.0 else { return }
+            contentView.layer.cornerRadius = self.cornerRadius
+            contentView.layer.masksToBounds = true
+        }
+    }
+    
+    /**
+     padding as `CGFloat`
+     */
+    private var padding: CGFloat = 0.0
+    
+    /**
+     date title label as `UILabel`
+     */
     private var dateTitleLabel: UILabel!
+    
+    /**
+     today button as `UIButton`
+     */
     private var todayButton: UIButton!
-    private var undoButton: UIButton!
+    
+    /**
+     cancel button as `UIButton`
+     */
+    private var cancelButton: UIButton!
+    
+    /**
+     done button as `UIButton`
+     */
     private var doneButton: UIButton!
+    
+    /**
+     colon label as `UILabel`
+     */
     private var colonLabel: UILabel!
     
+    /**
+     minimum date as `Date`
+     */
     private var minimumDate: Date!
+    
+    /**
+     maximum date as `Date`
+     */
     private var maximumDate: Date!
     
+    /**
+     calendar as `Calendar`
+     */
     internal var calendar: Calendar = .current
+    
+    /**
+     dates as `[Date]` array of dates
+     */
     internal var dates: [Date]! = []
+    
+    /**
+     components date as `DateComponents`
+     */
     internal var components: DateComponents!
     
     
-    @objc open class func show(selected: Date? = nil, minimumDate: Date? = nil, maximumDate: Date? = nil) -> DateTimePicker {
+    // ********************************
+    //
+    // MARK: - Layout
+    //
+    // ********************************
+    
+    /**
+     layout subviews
+     */
+    public override func layoutSubviews() {
+        super.layoutSubviews()
+        // For the first time view will be layouted manually before show
+        // For next times we need relayout it because of screen rotation etc.
+        if !didLayoutAtOnce { didLayoutAtOnce = true }
+        else {
+            let frame = self.frame
+            self.configureView(withFrame: frame, padding: self.padding)
+        }
+    }
+    
+    
+    // ********************************
+    //
+    // MARK: - Show & Configure
+    //
+    // ********************************
+    
+    /**
+     show selected date with minimum and maximum dates
+     
+     - note: support also iPad split screen with frame
+     - parameter selected: `Date` optional
+     - parameter minimumDate: `Date` optional
+     - parameter maximumDate: `Date` optional
+     - parameter frame: `CGRect` optional
+     - parameter padding: `CGFloat` optional
+     
+     - returns: `DateTimePicker`
+     */
+    open class func show(selected: Date? = nil, minimumDate: Date? = nil, maximumDate: Date? = nil, frame: CGRect? = nil, padding: CGFloat? = 0.0) -> DateTimePicker {
         let dateTimePicker = DateTimePicker()
         dateTimePicker.selectedDate = selected ?? Date()
         dateTimePicker.minimumDate = minimumDate ?? Date(timeIntervalSinceNow: -3600 * 24 * 365 * 20)
@@ -115,82 +353,111 @@ import UIKit
         assert(dateTimePicker.minimumDate.compare(dateTimePicker.selectedDate) != .orderedDescending, "Selected date should be later or equal to minimum date")
         assert(dateTimePicker.selectedDate.compare(dateTimePicker.maximumDate) != .orderedDescending, "Selected date should be earlier or equal to maximum date")
         
-        dateTimePicker.configureView()
+        let rect = frame ?? UIScreen.main.bounds
+        dateTimePicker.configureView(withFrame: rect, padding: padding)
+        dateTimePicker.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         UIApplication.shared.keyWindow?.addSubview(dateTimePicker)
+        UIApplication.shared.keyWindow?.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         
         return dateTimePicker
     }
     
-    private func configureView() {
+    
+    /**
+     configure view with frame and padding
+     
+     - note: support also iPad split screen with frame
+     - parameter rect: `CGRect` optional
+     - parameter padding: `CGFloat` optional
+     
+     */
+    private func configureView(withFrame rect: CGRect? = nil, padding: CGFloat? = 0.0) {
+        
         if self.contentView != nil {
+            if self.shadowView != nil { self.shadowView.removeFromSuperview() }
             self.contentView.removeFromSuperview()
         }
-        let screenSize = UIScreen.main.bounds.size
+        // screen
+        let screenSize = rect?.size ?? UIScreen.main.bounds.size
         self.frame = CGRect(x: 0,
                             y: 0,
                             width: screenSize.width,
                             height: screenSize.height)
+        self.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        
+        // shadow view
+        shadowView = UIView(frame: CGRect(x: 0,
+                                          y: 0,
+                                          width: frame.width,
+                                          height: frame.height))
+        shadowView.backgroundColor = backgroundViewColor ?? UIColor.black.withAlphaComponent(0.3)
+        shadowView.alpha = 1
+        let shadowViewTap = UITapGestureRecognizer(target: self, action: #selector(DateTimePicker.dismissView(sender:)))
+        shadowView.addGestureRecognizer(shadowViewTap)
+        addSubview(shadowView)
+        
+        // set padding
+        let pad = padding ?? 0.0
+        self.padding = pad
         
         // content view
-        contentView = UIView(frame: CGRect(x: 0,
-                                           y: frame.height,
-                                           width: frame.width,
+        contentView = UIView(frame: CGRect(x: pad,
+                                           y: frame.height - pad,
+                                           width: frame.width - pad*2,
                                            height: contentHeight))
         contentView.layer.shadowColor = UIColor(white: 0, alpha: 0.3).cgColor
         contentView.layer.shadowOffset = CGSize(width: 0, height: -2.0)
         contentView.layer.shadowRadius = 1.5
         contentView.layer.shadowOpacity = 0.5
-        contentView.backgroundColor = .white
-        //contentView.backgroundColor = UIColor(red: 44.0/255.0, green: 79.0/255.0, blue: 128.0/255.0, alpha: 1)//test
+        contentView.backgroundColor = contentViewBackgroundColor
         contentView.isHidden = true
         addSubview(contentView)
         
         // title view
         let titleView = UIView(frame: CGRect(origin: CGPoint.zero,
                                              size: CGSize(width: contentView.frame.width, height: 44)))
-        titleView.backgroundColor = .white
-        //titleView.backgroundColor = UIColor(red: 44.0/255.0, green: 79.0/255.0, blue: 128.0/255.0, alpha: 1)//test
+        titleView.backgroundColor = titleViewBackgroundColor
         contentView.addSubview(titleView)
         
+        // date title label
         dateTitleLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 44))
         dateTitleLabel.font = UIFont.systemFont(ofSize: 15)
-        dateTitleLabel.textColor = darkColor//UIColor.white//darkColor
+        dateTitleLabel.textColor = darkColor
         dateTitleLabel.textAlignment = .center
         resetDateTitle()
         titleView.addSubview(dateTitleLabel)
         
-        //undo button
-        undoButton = UIButton(type: .custom)
-        undoButton.setTitle(todayButtonTitle, for: .normal)
-        undoButton.setTitleColor(highlightColor, for: .normal)
-        undoButton.addTarget(self, action: #selector(DateTimePicker.dismissCalendar), for: .touchUpInside)
-        undoButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
-        undoButton.isHidden = false
-        let size0 = undoButton.sizeThatFits(CGSize(width: 0, height: 44.0)).width + 10.0
-        undoButton.frame = CGRect(x: 0, y: 0, width: size0, height: 44)
-        titleView.addSubview(undoButton)
-        //-end
+        // cancel button
+        cancelButton = UIButton(type: .system)
+        cancelButton.setTitle(cancelButtonTitle, for: .normal)
+        cancelButton.setTitleColor(highlightColor, for: .normal)
+        cancelButton.addTarget(self, action: #selector(DateTimePicker.dismissView(sender:)), for: .touchUpInside)
+        cancelButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+        let cancelSize = cancelButton.sizeThatFits(CGSize(width: 0, height: 44.0)).width + 20.0
+        cancelButton.frame = CGRect(x: 0, y: 0, width: cancelSize, height: 44)
+        titleView.addSubview(cancelButton)
         
+        // today button
         todayButton = UIButton(type: .system)
         todayButton.setTitle(todayButtonTitle, for: .normal)
         todayButton.setTitleColor(highlightColor, for: .normal)
         todayButton.addTarget(self, action: #selector(DateTimePicker.setToday), for: .touchUpInside)
         todayButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
         todayButton.isHidden = self.minimumDate.compare(Date()) == .orderedDescending || self.maximumDate.compare(Date()) == .orderedAscending
-        let size = todayButton.sizeThatFits(CGSize(width: 0, height: 44.0)).width + 10.0
+        let size = todayButton.sizeThatFits(CGSize(width: 0, height: 44.0)).width + 20.0
         todayButton.frame = CGRect(x: contentView.frame.width - size, y: 0, width: size, height: 44)
         titleView.addSubview(todayButton)
         
-        // day collection view
+        // day collection view flow layout
         let layout = StepCollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
         layout.minimumInteritemSpacing = 10
         layout.sectionInset = UIEdgeInsets(top: 10, left: 0, bottom: 10, right: 0)
         layout.itemSize = CGSize(width: 75, height: 80)
         
+        // day collection view
         dayCollectionView = UICollectionView(frame: CGRect(x: 0, y: 44, width: contentView.frame.width, height: 100), collectionViewLayout: layout)
-        dayCollectionView.backgroundColor = .white//daysBackgroundColor
-        //dayCollectionView.backgroundColor = UIColor(red: 44.0/255.0, green: 79.0/255.0, blue: 128.0/255.0, alpha: 1)//test
+        dayCollectionView.backgroundColor = daysCollectionViewBackgroundColor
         dayCollectionView.showsHorizontalScrollIndicator = false
         dayCollectionView.register(DateCollectionViewCell.self, forCellWithReuseIdentifier: "dateCell")
         dayCollectionView.dataSource = self
@@ -202,21 +469,19 @@ import UIKit
         
         // top & bottom borders on day collection view
         let borderTopView = UIView(frame: CGRect(x: 0, y: titleView.frame.height, width: titleView.frame.width, height: 1))
-        borderTopView.backgroundColor = .white//darkColor.withAlphaComponent(0.2)
+        borderTopView.backgroundColor = borderTopViewBackgroundColor
         contentView.addSubview(borderTopView)
         
         let borderBottomView = UIView(frame: CGRect(x: 0, y: dayCollectionView.frame.origin.y + dayCollectionView.frame.height, width: titleView.frame.width, height: 1))
-        borderBottomView.backgroundColor = .white//darkColor.withAlphaComponent(0.2)
+        borderBottomView.backgroundColor = borderBottomViewBackgroundColor
         contentView.addSubview(borderBottomView)
         
         // done button
         doneButton = UIButton(type: .custom)
         doneButton.frame = CGRect(x: 10, y: contentView.frame.height - 10 - 44, width: contentView.frame.width - 20, height: 44)
         doneButton.setTitle(doneButtonTitle, for: .normal)
-        doneButton.setTitleColor(.white, for: .normal)
-        //doneButton.backgroundColor = darkColor.withAlphaComponent(0.5)
-        //doneButton.backgroundColor = UIColor(red: 97.0/255.0, green: 191.0/255.0, blue: 173.0/255.0, alpha: 1)//test
-        doneButton.backgroundColor = highlightColor//test
+        doneButton.setTitleColor(doneButtonTitleColor, for: .normal)
+        doneButton.backgroundColor = highlightColor
         doneButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 13)
         doneButton.layer.cornerRadius = 3
         doneButton.layer.masksToBounds = true
@@ -262,13 +527,11 @@ import UIKit
         // time separators
         let separatorTopView = UIView(frame: CGRect(x: 0, y: 0, width: 90, height: 1))
         separatorTopView.backgroundColor = darkColor.withAlphaComponent(0.2)
-        //separatorTopView.backgroundColor = .white//test
         separatorTopView.center = CGPoint(x: contentView.frame.width / 2, y: borderBottomView.frame.origin.y + 36)
         contentView.addSubview(separatorTopView)
         
         let separatorBottomView = UIView(frame: CGRect(x: 0, y: 0, width: 90, height: 1))
         separatorBottomView.backgroundColor = darkColor.withAlphaComponent(0.2)
-        //separatorBottomView.backgroundColor = .white//test
         separatorBottomView.center = CGPoint(x: contentView.frame.width / 2, y: separatorTopView.frame.origin.y + 36)
         contentView.addSubview(separatorBottomView)
         
@@ -292,18 +555,51 @@ import UIKit
         
         // animate to show contentView
         UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.4, options: .curveEaseIn, animations: {
-            self.contentView.frame = CGRect(x: 0,
-                                            y: self.frame.height - self.contentHeight,
-                                            width: self.frame.width,
+            self.contentView.frame = CGRect(x: pad,
+                                            y: self.frame.height - self.contentHeight - pad,
+                                            width: self.frame.width - pad*2,
                                             height: self.contentHeight)
         }, completion: nil)
     }
     
+    
+    // ********************************
+    //
+    // MARK: - Methods
+    //
+    // ********************************
+    
+    /**
+     dismiss view with sender as button
+     
+     - parameter sender: `UIButton` optional
+     */
+    public func dismissView(sender: UIButton?=nil) {
+        UIView.animate(withDuration: 0.3, animations: {
+            // animate to show contentView
+            self.contentView.frame = CGRect(x: 0,
+                                            y: self.frame.height,
+                                            width: self.frame.width,
+                                            height: self.contentHeight)
+        }) { (completed) in
+            if sender == self.doneButton {
+                self.completionHandler?(self.selectedDate)
+            }
+            self.removeFromSuperview()
+        }
+    }
+    
+    /**
+     set today as selected date
+     */
     func setToday() {
         selectedDate = Date()
         resetTime()
     }
     
+    /**
+     dismiss current calendar
+     */
     func dismissCalendar() {
         UIView.animate(withDuration: 0.3, animations: {
             // animate to show contentView
@@ -316,6 +612,9 @@ import UIKit
         }
     }
     
+    /**
+     reset time
+     */
     func resetTime() {
         components = calendar.dateComponents([.day, .month, .year, .hour, .minute], from: selectedDate)
         updateCollectionView(to: selectedDate)
@@ -329,6 +628,9 @@ import UIKit
         }
     }
     
+    /**
+     reset date title
+     */
     private func resetDateTitle() {
         guard dateTitleLabel != nil else {
             return
@@ -340,6 +642,12 @@ import UIKit
         dateTitleLabel.center = CGPoint(x: contentView.frame.width / 2, y: 22)
     }
     
+    /**
+     fill dates from date to date
+     
+     - parameter fromDate: `Date` required
+     - parameter toDate: `Date` required
+     */
     func fillDates(fromDate: Date, toDate: Date) {
         
         var dates: [Date] = []
@@ -366,6 +674,11 @@ import UIKit
         }
     }
     
+    /**
+     update collection view to current date
+     
+     - parameter currentDate: `Date` requried
+     */
     func updateCollectionView(to currentDate: Date) {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd/MM/YYYY"
@@ -383,6 +696,9 @@ import UIKit
         }
     }
     
+    /**
+     dismiss view
+     */
     func dismissView() {
         UIView.animate(withDuration: 0.3, animations: {
             // animate to show contentView
@@ -418,10 +734,7 @@ extension DateTimePicker: UITableViewDataSource, UITableViewDelegate {
         cell.textLabel?.textAlignment = tableView == hourTableView ? .right : .left
         cell.textLabel?.font = UIFont.boldSystemFont(ofSize: 18)
         cell.textLabel?.textColor = darkColor.withAlphaComponent(0.4)
-        //cell.textLabel?.textColor = .white//test
         cell.textLabel?.highlightedTextColor = highlightColor
-        //cell.contentView.backgroundColor = UIColor(red: 44.0/255.0, green: 79.0/255.0, blue: 128.0/255.0, alpha: 1)//test
-        //cell.backgroundColor = UIColor(red: 44.0/255.0, green: 79.0/255.0, blue: 128.0/255.0, alpha: 1)//test
         // add module operation to set value same
         cell.textLabel?.text = String(format: "%02i", indexPath.row % (tableView == hourTableView ? 24 : 60))
         
@@ -470,8 +783,15 @@ extension DateTimePicker: UICollectionViewDataSource, UICollectionViewDelegate {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "dateCell", for: indexPath) as! DateCollectionViewCell
         
         let date = dates[indexPath.item]
-        cell.populateItem(date: date, highlightColor: highlightColor, darkColor: darkColor)
         
+        cell.populateItem(date:             date,
+                          highlightColor:   highlightColor,
+                          darkColor:        darkColor,
+                          dayColor:         cellDayTitleColor,
+                          monthColor:       cellMonthTitleColor,
+                          numberColor:      cellNumberTitleColor,
+                          borderColor:      cellBorderColor,
+                          backColor:        cellBackgroundColor)
         return cell
     }
     
