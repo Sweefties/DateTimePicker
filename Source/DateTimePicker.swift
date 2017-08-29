@@ -574,7 +574,7 @@ import UIKit
      
      - parameter sender: `UIButton` optional
      */
-    public func dismissView(sender: UIButton?=nil) {
+    @objc public func dismissView(sender: UIButton?=nil) {
         UIView.animate(withDuration: 0.3, animations: {
             // animate to show contentView
             self.contentView.frame = CGRect(x: 0,
@@ -592,7 +592,7 @@ import UIKit
     /**
      set today as selected date
      */
-    func setToday() {
+    @objc func setToday() {
         selectedDate = Date()
         resetTime()
     }
@@ -699,7 +699,7 @@ import UIKit
     /**
      dismiss view
      */
-    func dismissView() {
+    @objc func dismissView() {
         UIView.animate(withDuration: 0.3, animations: {
             // animate to show contentView
             self.contentView.frame = CGRect(x: 0,
@@ -849,6 +849,12 @@ extension DateTimePicker: UICollectionViewDataSource, UICollectionViewDelegate {
             let relativeOffset = CGPoint(x: 0, y: tableView.contentOffset.y + tableView.contentInset.top )
             // change row from var to let.
             let row = round(relativeOffset.y / tableView.rowHeight)
+            /*
+            print("CO Y: \(tableView.contentOffset.y)")
+            print("CI top: \(tableView.contentInset.top)")
+            print("row: \(row)")
+            print("relative offset: \(relativeOffset.y)")
+            */
             tableView.selectRow(at: IndexPath(row: Int(row), section: 0), animated: true, scrollPosition: .middle)
             
             // add 24 to hour and 60 to minute, because datasource now has buffer at top and bottom.
