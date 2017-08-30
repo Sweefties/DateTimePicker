@@ -60,6 +60,11 @@ import UIKit
     public var completionHandler: ((Date)->Void)?
     
     /**
+     dismiss handler as `Void` optional
+     */
+    public var dismissHandler: (() -> Void)?
+    
+    /**
      background view color as `UIColor` optional
      */
     public var backgroundViewColor: UIColor? = .clear {
@@ -581,9 +586,14 @@ import UIKit
                                             y: self.frame.height,
                                             width: self.frame.width,
                                             height: self.contentHeight)
-        }) { (completed) in
+        }) {[weak self] (completed) in
+            guard let `self` = self else {
+                return
+            }
             if sender == self.doneButton {
                 self.completionHandler?(self.selectedDate)
+            } else {
+                self.dismissHandler?()
             }
             self.removeFromSuperview()
         }
@@ -711,6 +721,7 @@ import UIKit
             self.removeFromSuperview()
         }
     }
+    
 }
 
 extension DateTimePicker: UITableViewDataSource, UITableViewDelegate {
@@ -846,24 +857,30 @@ extension DateTimePicker: UICollectionViewDataSource, UICollectionViewDelegate {
                 }
             }
         } else if let tableView = scrollView as? UITableView {
-            let relativeOffset = CGPoint(x: 0, y: tableView.contentOffset.y + tableView.contentInset.top )
-            // change row from var to let.
-            let row = round(relativeOffset.y / tableView.rowHeight)
-            /*
-            print("CO Y: \(tableView.contentOffset.y)")
-            print("CI top: \(tableView.contentInset.top)")
-            print("row: \(row)")
-            print("relative offset: \(relativeOffset.y)")
-            */
-            tableView.selectRow(at: IndexPath(row: Int(row), section: 0), animated: true, scrollPosition: .middle)
-            
-            // add 24 to hour and 60 to minute, because datasource now has buffer at top and bottom.
-            if tableView == hourTableView {
-                components.hour = Int(row - 24)%24
-            } else if tableView == minuteTableView {
-                components.minute = Int(row - 60)%60
+            // select row and set hour and minute
+            if #available(iOS 11.0, *) {
+                if let idp = tableView.indexPathsForVisibleRows?[2] {
+                    tableView.selectRow(at: idp, animated: true, scrollPosition: .middle)
+                    // add 24 to hour and 60 to minute, because datasource now has buffer at top and bottom.
+                    if tableView == hourTableView {
+                        components.hour = Int(idp.row - 24)%24
+                    } else if tableView == minuteTableView {
+                        components.minute = Int(idp.row - 60)%60
+                    }
+                }
+            }else{
+                let relativeOffset = CGPoint(x: 0, y: tableView.contentOffset.y + tableView.contentInset.top )
+                // change row from var to let.
+                let row = round(relativeOffset.y / tableView.rowHeight)
+                tableView.selectRow(at: IndexPath(row: Int(row), section: 0), animated: true, scrollPosition: .middle)
+                // add 24 to hour and 60 to minute, because datasource now has buffer at top and bottom.
+                if tableView == hourTableView {
+                    components.hour = Int(row - 24)%24
+                } else if tableView == minuteTableView {
+                    components.minute = Int(row - 60)%60
+                }
             }
-            
+            // set selected date
             if let selected = calendar.date(from: components) {
                 selectedDate = selected
             }
