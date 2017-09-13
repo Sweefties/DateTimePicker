@@ -51,6 +51,8 @@ import UIKit
         didSet {
             contentView.layer.cornerRadius = cornerRadius
             contentView.layer.masksToBounds = true
+            //doneButton.layer.cornerRadius = cornerRadius
+            //doneButton.layer.masksToBounds = true
         }
     }
     
@@ -349,7 +351,7 @@ import UIKit
      
      - returns: `DateTimePicker`
      */
-    open class func show(selected: Date? = nil, minimumDate: Date? = nil, maximumDate: Date? = nil, frame: CGRect? = nil, padding: CGFloat? = 0.0) -> DateTimePicker {
+    open class func show(selected: Date? = nil, minimumDate: Date? = nil, maximumDate: Date? = nil, frame: CGRect? = nil, padding: CGFloat? = 0.0, bottom: CGFloat? = 0.0) -> DateTimePicker {
         let dateTimePicker = DateTimePicker()
         dateTimePicker.selectedDate = selected ?? Date()
         dateTimePicker.minimumDate = minimumDate ?? Date(timeIntervalSinceNow: -3600 * 24 * 365 * 20)
@@ -359,7 +361,7 @@ import UIKit
         assert(dateTimePicker.selectedDate.compare(dateTimePicker.maximumDate) != .orderedDescending, "Selected date should be earlier or equal to maximum date")
         
         let rect = frame ?? UIScreen.main.bounds
-        dateTimePicker.configureView(withFrame: rect, padding: padding)
+        dateTimePicker.configureView(withFrame: rect, padding: padding, bottom: bottom)
         dateTimePicker.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         UIApplication.shared.keyWindow?.addSubview(dateTimePicker)
         UIApplication.shared.keyWindow?.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -376,7 +378,7 @@ import UIKit
      - parameter padding: `CGFloat` optional
      
      */
-    private func configureView(withFrame rect: CGRect? = nil, padding: CGFloat? = 0.0) {
+    private func configureView(withFrame rect: CGRect? = nil, padding: CGFloat? = 0.0, bottom: CGFloat? = 0.0) {
         
         if self.contentView != nil {
             if self.shadowView != nil { self.shadowView.removeFromSuperview() }
@@ -404,6 +406,9 @@ import UIKit
         // set padding
         let pad = padding ?? 0.0
         self.padding = pad
+        
+        // set bottom
+        let bot = bottom ?? 0.0
         
         // content view
         contentView = UIView(frame: CGRect(x: pad,
@@ -487,8 +492,8 @@ import UIKit
         doneButton.setTitle(doneButtonTitle, for: .normal)
         doneButton.setTitleColor(doneButtonTitleColor, for: .normal)
         doneButton.backgroundColor = highlightColor
-        doneButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 13)
-        doneButton.layer.cornerRadius = 3
+        doneButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 17.0)
+        doneButton.layer.cornerRadius = 8.0
         doneButton.layer.masksToBounds = true
         doneButton.addTarget(self, action: #selector(DateTimePicker.dismissView), for: .touchUpInside)
         contentView.addSubview(doneButton)
@@ -561,9 +566,9 @@ import UIKit
         // animate to show contentView
         UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.4, options: .curveEaseIn, animations: {
             self.contentView.frame = CGRect(x: pad,
-                                            y: self.frame.height - self.contentHeight - pad,
-                                            width: self.frame.width - pad*2,
-                                            height: self.contentHeight)
+                                            y: self.frame.height - self.contentHeight - pad - bot,//add -40.0 for iPhone X
+                width: self.frame.width - pad*2,
+                height: self.contentHeight)
         }, completion: nil)
     }
     
@@ -580,6 +585,7 @@ import UIKit
      - parameter sender: `UIButton` optional
      */
     @objc public func dismissView(sender: UIButton?=nil) {
+        
         UIView.animate(withDuration: 0.3, animations: {
             // animate to show contentView
             self.contentView.frame = CGRect(x: 0,
@@ -887,3 +893,4 @@ extension DateTimePicker: UICollectionViewDataSource, UICollectionViewDelegate {
         }
     }
 }
+
