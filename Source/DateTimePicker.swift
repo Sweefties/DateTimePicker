@@ -504,7 +504,7 @@ import UIKit
                                                   width: 60,
                                                   height: doneButton.frame.origin.y - borderBottomView.frame.origin.y - 10))
         hourTableView.rowHeight = 36
-        hourTableView.contentInset = UIEdgeInsetsMake(hourTableView.frame.height / 2, 0, hourTableView.frame.height / 2, 0)
+        hourTableView.contentInset = UIEdgeInsets(top: hourTableView.frame.height / 2, left: 0, bottom: hourTableView.frame.height / 2, right: 0)
         hourTableView.showsVerticalScrollIndicator = false
         hourTableView.separatorStyle = .none
         hourTableView.delegate = self
@@ -517,7 +517,7 @@ import UIKit
                                                     width: 60,
                                                     height: doneButton.frame.origin.y - borderBottomView.frame.origin.y - 10))
         minuteTableView.rowHeight = 36
-        minuteTableView.contentInset = UIEdgeInsetsMake(minuteTableView.frame.height / 2, 0, minuteTableView.frame.height / 2, 0)
+        minuteTableView.contentInset = UIEdgeInsets(top: minuteTableView.frame.height / 2, left: 0, bottom: minuteTableView.frame.height / 2, right: 0)
         minuteTableView.showsVerticalScrollIndicator = false
         minuteTableView.separatorStyle = .none
         minuteTableView.delegate = self
@@ -685,7 +685,7 @@ import UIKit
         self.dates = dates
         dayCollectionView.reloadData()
         
-        if let index = self.dates.index(of: selectedDate) {
+        if let index = self.dates.firstIndex(of: selectedDate) {
             dayCollectionView.selectItem(at: IndexPath(row: index, section: 0), animated: true, scrollPosition: .centeredHorizontally)
         }
     }
