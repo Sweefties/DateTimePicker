@@ -37,7 +37,7 @@ Pod::Spec.new do |s|
   # ――― Source Location ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
   #
 
-  s.source       = { :git => "https://github.com/itsmeichigo/DateTimePicker.git", :tag => s.version }
+  s.source       = { :git => "https://github.com/Sweefties/DateTimePicker.git", :tag => s.version }
 
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
@@ -47,6 +47,6 @@ Pod::Spec.new do |s|
   s.framework  = "UIKit"
 
   s.requires_arc = true
-  s.pod_target_xcconfig = { "SWIFT_VERSION" => "3.0" }
+  s.pod_target_xcconfig = { "SWIFT_VERSION" => "5.0" }
 
 end
